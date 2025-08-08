@@ -1,0 +1,108 @@
+# docker-compose.yml
+# This file defines the services for the application stack.
+# It includes PostgreSQL as the database, PostgREST as the API layer,
+# and Traefik as the reverse proxy.
+
+version: '3.8'
+
+services:
+  # PostgreSQL database service, now built from a custom Dockerfile
+  postgres:
+    build:
+      context: .
+      dockerfile: postgres/postgres.Dockerfile
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: file_storage_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: your_strong_password
+      # This variable is used by the PL/Python function to determine the storage backend.
+      # Example for local filesystem: "fs:///var/storage"
+      # Example for S3: "s3://your_bucket_name/?region=your_region"
+      # Ensure you have the necessary credentials configured for your cloud storage.
+      STORAGE_BACKEND_URL: "osfs:///var/storage"
+      # To try S3 for example, you would set:
+      # STORAGE_BACKEND_URL: "s3://...your_bucket_name.../?region=...your_region..."
+      # AWS_ACCESS_KEY_ID: "... your_access_key_id..."
+      # AWS_SECRET_ACCESS_KEY: "... your_secret_access_key..."
+      # AWS_SESSION_TOKEN: "... your_session_token..."
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./storage:/var/storage
+    ports:
+      - "5433:5432"
+    networks:
+      - backend_net
+
+
+  # React Frontend GUI
+  gui_service:
+    build:
+      context: ./gui/react_gui
+      dockerfile: Dockerfile
+    container_name: gui_service
+    hostname: gui_service
+    expose:
+      - 80
+    ports:
+      - "8082:80"
+    networks:
+      - backend_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gui_service.rule=Host(`localhost`)"
+      - "traefik.http.routers.gui_service.entrypoints=web"
+      - "traefik.http.services.gui_service.loadbalancer.server.port=80"
+      #- "traefik.http.routers.gui_service.priority=3"
+
+
+  # PostgREST service to expose the database as a RESTful API
+  postgrest:
+    image: postgrest/postgrest:latest
+    container_name: postgrest_api
+    restart: always
+    environment:
+      PGRST_DB_URI: "postgres://admin:your_strong_password@postgres_db:5432/file_storage_db"
+      PGRST_DB_SCHEMA: "file_storage"
+      # Anonymous access is disabled as the 'reader' role has been removed.
+      PGRST_JWT_SECRET: "a_very_secret_and_long_jwt_secret_key_that_is_at_least_32_characters"
+      PGRST_DB_ANON_ROLE: "authenticator"
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+    networks:
+      - backend_net
+    labels:
+      - "traefik.enable=true"
+      # This rule now routes requests from localhost to the PostgREST service
+      - "traefik.http.routers.postgrest.rule=Host(`localhost`) && (PathPrefix(`/rpc`) || PathPrefix(`/files`))"
+      - "traefik.http.routers.postgrest.entrypoints=web"
+      - "traefik.http.services.postgrest.loadbalancer.server.port=3000"
+      #- "traefik.http.routers.postgrest.priority=2"
+
+  # Traefik reverse proxy
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik_proxy
+    restart: always
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:81"
+    ports:
+      - "81:81"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - backend_net
+
+
+volumes:
+  postgres_data:
+
+networks:
+  backend_net:

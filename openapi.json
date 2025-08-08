@@ -1,0 +1,529 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "",
+    "title": "Schema for the file storage application, containing all related tables, functions, and views.",
+    "version": "12.2.7"
+  },
+  "host": "0.0.0.0:3000",
+  "basePath": "/",
+  "schemes": ["http"],
+  "consumes": [
+    "application/json",
+    "application/vnd.pgrst.object+json;nulls=stripped",
+    "application/vnd.pgrst.object+json",
+    "text/csv"
+  ],
+  "produces": [
+    "application/json",
+    "application/vnd.pgrst.object+json;nulls=stripped",
+    "application/vnd.pgrst.object+json",
+    "text/csv"
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "produces": ["application/openapi+json", "application/json"],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "OpenAPI description (this document)",
+        "tags": ["Introspection"]
+      }
+    },
+    "/rpc/store_file": {
+      "get": {
+        "parameters": [
+          {
+            "format": "bytea",
+            "in": "query",
+            "name": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "Public RPC endpoint to store/update a file. Handles auth/metadata and calls the internal write function.",
+        "tags": ["(rpc) store_file"]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "description": "Public RPC endpoint to store/update a file. Handles auth/metadata and calls the internal write function.",
+              "properties": { "": { "format": "bytea", "type": "string" } },
+              "required": [""],
+              "type": "object"
+            }
+          },
+          { "$ref": "#/parameters/preferParams" }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "Public RPC endpoint to store/update a file. Handles auth/metadata and calls the internal write function.",
+        "tags": ["(rpc) store_file"]
+      }
+    },
+    "/rpc/internal_read_from_storage": {
+      "get": {
+        "parameters": [
+          {
+            "format": "text",
+            "in": "query",
+            "name": "p_storage_path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "[INTERNAL] Reads a file from the physical storage backend. Should only be called by wrapper functions.",
+        "tags": ["(rpc) internal_read_from_storage"]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "description": "[INTERNAL] Reads a file from the physical storage backend. Should only be called by wrapper functions.",
+              "properties": {
+                "p_storage_path": { "format": "text", "type": "string" }
+              },
+              "required": ["p_storage_path"],
+              "type": "object"
+            }
+          },
+          { "$ref": "#/parameters/preferParams" }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "[INTERNAL] Reads a file from the physical storage backend. Should only be called by wrapper functions.",
+        "tags": ["(rpc) internal_read_from_storage"]
+      }
+    },
+    "/rpc/internal_write_to_storage": {
+      "get": {
+        "parameters": [
+          {
+            "format": "text",
+            "in": "query",
+            "name": "p_storage_path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "format": "bytea",
+            "in": "query",
+            "name": "p_file_data",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "[INTERNAL] Writes a file to the physical storage backend. Should only be called by wrapper functions.",
+        "tags": ["(rpc) internal_write_to_storage"]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "description": "[INTERNAL] Writes a file to the physical storage backend. Should only be called by wrapper functions.",
+              "properties": {
+                "p_file_data": { "format": "bytea", "type": "string" },
+                "p_storage_path": { "format": "text", "type": "string" }
+              },
+              "required": ["p_storage_path", "p_file_data"],
+              "type": "object"
+            }
+          },
+          { "$ref": "#/parameters/preferParams" }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "[INTERNAL] Writes a file to the physical storage backend. Should only be called by wrapper functions.",
+        "tags": ["(rpc) internal_write_to_storage"]
+      }
+    },
+    "/rpc/retrieve_file": {
+      "get": {
+        "parameters": [
+          {
+            "format": "text",
+            "in": "query",
+            "name": "p_file_path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "Public RPC endpoint to retrieve a file. Handles auth/ownership checks and calls the internal read function.",
+        "tags": ["(rpc) retrieve_file"]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "description": "Public RPC endpoint to retrieve a file. Handles auth/ownership checks and calls the internal read function.",
+              "properties": {
+                "p_file_path": { "format": "text", "type": "string" }
+              },
+              "required": ["p_file_path"],
+              "type": "object"
+            }
+          },
+          { "$ref": "#/parameters/preferParams" }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "Public RPC endpoint to retrieve a file. Handles auth/ownership checks and calls the internal read function.",
+        "tags": ["(rpc) retrieve_file"]
+      }
+    },
+    "/rpc/url_decode": {
+      "get": {
+        "parameters": [
+          {
+            "format": "text",
+            "in": "query",
+            "name": "data",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "URL-safe base64 decoding.",
+        "tags": ["(rpc) url_decode"]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "description": "URL-safe base64 decoding.",
+              "properties": { "data": { "format": "text", "type": "string" } },
+              "required": ["data"],
+              "type": "object"
+            }
+          },
+          { "$ref": "#/parameters/preferParams" }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "URL-safe base64 decoding.",
+        "tags": ["(rpc) url_decode"]
+      }
+    },
+    "/rpc/login": {
+      "get": {
+        "parameters": [
+          {
+            "format": "text",
+            "in": "query",
+            "name": "email",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "format": "text",
+            "in": "query",
+            "name": "password",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "Authenticates a user and returns a signed JWT.",
+        "tags": ["(rpc) login"]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "description": "Authenticates a user and returns a signed JWT.",
+              "properties": {
+                "email": { "format": "text", "type": "string" },
+                "password": { "format": "text", "type": "string" }
+              },
+              "required": ["email", "password"],
+              "type": "object"
+            }
+          },
+          { "$ref": "#/parameters/preferParams" }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "Authenticates a user and returns a signed JWT.",
+        "tags": ["(rpc) login"]
+      }
+    },
+    "/rpc/url_encode": {
+      "get": {
+        "parameters": [
+          {
+            "format": "bytea",
+            "in": "query",
+            "name": "data",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "URL-safe base64 encoding.",
+        "tags": ["(rpc) url_encode"]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "description": "URL-safe base64 encoding.",
+              "properties": { "data": { "format": "bytea", "type": "string" } },
+              "required": ["data"],
+              "type": "object"
+            }
+          },
+          { "$ref": "#/parameters/preferParams" }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "URL-safe base64 encoding.",
+        "tags": ["(rpc) url_encode"]
+      }
+    },
+    "/rpc/algorithm_sign": {
+      "get": {
+        "parameters": [
+          {
+            "format": "text",
+            "in": "query",
+            "name": "signables",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "format": "text",
+            "in": "query",
+            "name": "secret",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "format": "text",
+            "in": "query",
+            "name": "algorithm",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "Signs a text string using HMAC with the specified SHA algorithm.",
+        "tags": ["(rpc) algorithm_sign"]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "description": "Signs a text string using HMAC with the specified SHA algorithm.",
+              "properties": {
+                "algorithm": { "format": "text", "type": "string" },
+                "secret": { "format": "text", "type": "string" },
+                "signables": { "format": "text", "type": "string" }
+              },
+              "required": ["signables", "secret", "algorithm"],
+              "type": "object"
+            }
+          },
+          { "$ref": "#/parameters/preferParams" }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": { "200": { "description": "OK" } },
+        "summary": "Signs a text string using HMAC with the specified SHA algorithm.",
+        "tags": ["(rpc) algorithm_sign"]
+      }
+    }
+  },
+  "parameters": {
+    "preferParams": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": ["params=single-object"],
+      "in": "header",
+      "type": "string"
+    },
+    "preferReturn": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": ["return=representation", "return=minimal", "return=none"],
+      "in": "header",
+      "type": "string"
+    },
+    "preferCount": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": ["count=none"],
+      "in": "header",
+      "type": "string"
+    },
+    "preferPost": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "return=representation",
+        "return=minimal",
+        "return=none",
+        "resolution=ignore-duplicates",
+        "resolution=merge-duplicates"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "select": {
+      "name": "select",
+      "description": "Filtering Columns",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "on_conflict": {
+      "name": "on_conflict",
+      "description": "On Conflict",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "order": {
+      "name": "order",
+      "description": "Ordering",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "range": {
+      "name": "Range",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "header",
+      "type": "string"
+    },
+    "rangeUnit": {
+      "name": "Range-Unit",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "default": "items",
+      "in": "header",
+      "type": "string"
+    },
+    "offset": {
+      "name": "offset",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "limit": {
+      "name": "limit",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    }
+  },
+  "externalDocs": {
+    "description": "PostgREST Documentation",
+    "url": "https://postgrest.org/en/v12/references/api.html"
+  }
+}
