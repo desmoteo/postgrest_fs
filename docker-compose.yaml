@@ -26,7 +26,6 @@ services:
       # STORAGE_BACKEND_URL: "s3://...your_bucket_name.../?region=...your_region..."
       # AWS_ACCESS_KEY_ID: "... your_access_key_id..."
       # AWS_SECRET_ACCESS_KEY: "... your_secret_access_key..."
-      # AWS_SESSION_TOKEN: "... your_session_token..."
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql

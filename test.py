@@ -1,5 +1,6 @@
 import requests
 import json
+import base64
 
 # --- Configuration ---
 # The URL now points to the Traefik proxy, which listens on port 80.
@@ -71,7 +72,7 @@ def download_file(token, user_provided_path):
         print(f"Reason: {e.response.json().get('message')}")
         return None
 
-def test_internal_function_access(token):
+def test_internal_sign_function_access(token):
     """Attempts to call an internal-only function directly, which should fail."""
     url = f"{BASE_URL}/rpc/sign"
     # Dummy payload for the test. The content doesn't matter as the request should be rejected.
@@ -100,6 +101,66 @@ def test_internal_function_access(token):
         print(f"Reason: {e.response.text}")
         return True
 
+def test_internal_write_to_storage_function_access(token):
+    """Attempts to call an internal-only function directly, which should fail."""
+    url = f"{BASE_URL}/rpc/internal_write_to_storage"
+    # Dummy payload for the test. The content doesn't matter as the request should be rejected.
+    payload = {"p_storage_path": "dummy/path.txt", "p_file_data": base64.b64encode(b"test content").decode()}
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+
+
+    try:
+        print(f"\nAttempting to call internal function 'write_to_storage' as an editor with payload: {payload}...")
+        response = requests.post(url, data=json.dumps(payload), headers=headers)
+
+        # We expect this to fail with a 4xx error code.
+        if response.status_code >= 400:
+            print(f"SUCCESS: Received expected error. Status: {response.status_code}")
+            print(f"Reason: {response.json().get('message')}")
+            return True
+        else:
+            print(f"FAILURE: Unexpectedly succeeded in calling internal function 'write_to_storage': {response.status_code}")
+            return False
+
+    except requests.exceptions.RequestException as e:
+        # This is also a successful outcome in this context.
+        print(f"SUCCESS: Request failed as expected. Status: {e.response.status_code}")
+        print(f"Reason: {e.response.text}")
+        return True
+
+def test_internal_read_from_storage_function_access(token):
+    """Attempts to call an internal-only function directly, which should fail."""
+    url = f"{BASE_URL}/rpc/internal_read_from_storage"
+    # Dummy payload for the test. The content doesn't matter as the request should be rejected.
+    payload = {"p_storage_path": "dummy/path.txt"}
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+        print(f"\nAttempting to call internal function 'read_from_storage' as an editor with payload: {payload}...")
+        response = requests.post(url, data=json.dumps(payload), headers=headers)
+
+        # We expect this to fail with a 4xx error code.
+        if response.status_code >= 400:
+            print(f"SUCCESS: Received expected error. Status: {response.status_code}")
+            print(f"Reason: {response.json().get('message')}")
+            return True
+        else:
+            print(f"FAILURE: Unexpectedly succeeded in calling internal function 'read_from_storage': {response.status_code}")
+            return False
+
+    except requests.exceptions.RequestException as e:
+        # This is also a successful outcome in this context.
+        print(f"SUCCESS: Request failed as expected. Status: {e.response.status_code}")
+        print(f"Reason: {e.response.text}")
+        return True    
+    
 # --- Main Test Execution ---
 
 if __name__ == "__main__":
@@ -153,5 +214,8 @@ if __name__ == "__main__":
         
         for user, token in tokens.items():
             print(f"\n--- Test D: {user} tries to call internal function 'sign' ---")
-            test_internal_function_access(token)
-        
+            test_internal_sign_function_access(token)
+            print(f"\n--- Test D: {user} tries to call internal function 'write_to_storage' ---")
+            test_internal_write_to_storage_function_access(token)
+            print(f"\n--- Test D: {user} tries to call internal function 'read_from_storage' ---")
+            test_internal_read_from_storage_function_access(token)
